@@ -9,8 +9,15 @@ final class MeController {
         let mail = request.headers["mail"]
 
         var response = JSON()
-        try response.set("toPay", ious.filter { $0.emailDestination == mail }.makeJSON())
-        try response.set("toReceive", ious.filter { $0.emailSource == mail }.makeJSON())
+        
+        let payTotal = ious.filter { $0.emailDestination == mail }.reduceTotal()
+        let receiveTotal = ious.filter { $0.emailSource == mail }.reduceTotal()
+        
+        let payArray = try payTotal.toJSONArray()
+        let receiveArray = try receiveTotal.toJSONArray()
+
+        try response.set("toPay", payArray)
+        try response.set("toReceive", receiveArray)
 
         return response
     }

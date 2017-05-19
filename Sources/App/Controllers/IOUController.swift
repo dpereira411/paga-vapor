@@ -7,18 +7,18 @@ final class IOUController: ResourceRepresentable {
     func index(request: Request) throws -> ResponseRepresentable {
         let ious = try IOU.all()
         
-        let a = ious.reduce([String: Int]()) { r, iou in
-            var t = r
-            t[iou.emailDestination] = (t[iou.emailDestination] ?? 0) + iou.amountCents
-            return t
+        let totals = ious.reduceTotal()
+        
+        let array: [JSON] = try totals.map { key, value in
+            var response = JSON()
+            
+            try response.set("email", key)
+            try response.set("amountCents", value)
+            
+            return response
         }
         
-        var response = JSON()
-        for iou in a {
-            try response.set(dotKey: iou.key, iou.value)
-        }
-
-        return response
+        return try array.makeJSON()
     }
 
     /// When consumers call 'POST' on '/posts' with valid JSON

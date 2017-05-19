@@ -10,14 +10,14 @@ final class IOU: Model {
     var amountCents: Int
     var createdAt: Date
     var payedAt: Date?
-
+    
     init(emailSource: String, emailDestination: String, amountCents: Int) {
         self.emailSource = emailSource
         self.emailDestination = emailDestination
         self.amountCents = amountCents
         self.createdAt = Date()
     }
-
+    
     init(row: Row) throws {
         emailSource = try row.get("emailSource")
         emailDestination = try row.get("emailDestination")
@@ -25,7 +25,7 @@ final class IOU: Model {
         createdAt = try row.get("createdAt")
         payedAt = try row.get("payedAt")
     }
-
+    
     func makeRow() throws -> Row {
         var row = Row()
         try row.set("emailSource", emailSource)
@@ -49,7 +49,7 @@ extension IOU: Preparation {
             builder.date("payedAt", optional: true)
         }
     }
-
+    
     static func revert(_ database: Database) throws {
         try database.delete(self)
     }
@@ -77,3 +77,34 @@ extension IOU: JSONConvertible {
 }
 
 extension IOU: ResponseRepresentable { }
+
+
+
+extension Array where Element:IOU {
+    
+    func reduceTotal() -> [String: Int] {
+        return self.reduce([String: Int]()) { r, iou in
+            var t = r
+            t[iou.emailDestination] = (t[iou.emailDestination] ?? 0) + iou.amountCents
+            return t
+        }
+    }
+}
+
+extension Dictionary  {
+    
+    func toJSONArray() throws -> [JSON] {
+        return try self.map { iou in
+            var response = JSON()
+            
+            try response.set("email", iou.key)
+            try response.set("amountCents", iou.value)
+            
+            return response
+        }
+    }
+    
+}
+
+
+
