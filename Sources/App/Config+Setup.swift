@@ -19,7 +19,7 @@ extension Config {
     /// schemas prepared before the app boots
     private func setupPreparations() throws {
         preparations += [
-            Post.self
+            IOU.self
         ]
     }
 }

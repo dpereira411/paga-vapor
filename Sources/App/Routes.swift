@@ -20,7 +20,7 @@ final class Routes: RouteCollection {
 
        builder.get("*") { req in return req.description }
         
-        try builder.resource("posts", PostController.self)
+        try builder.resource("ious", IOUController.self)
     }
 }
 
