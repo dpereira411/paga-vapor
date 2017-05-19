@@ -7,7 +7,20 @@ final class IOUController: ResourceRepresentable {
     /// When users call 'GET' on '/posts'
     /// it should return an index of all available posts
     func index(request: Request) throws -> ResponseRepresentable {
-        return try IOU.all().makeJSON()
+        let ious = try IOU.all()
+        
+        let a = ious.reduce([String: Int]()) { r, iou in
+            var t = r
+            t[iou.emailDestination] = (t[iou.emailDestination] ?? 0) + iou.amountCents
+            return t
+        }
+        
+        var response = JSON()
+        for iou in a {
+            try response.set(dotKey: iou.key, iou.value)
+        }
+
+        return response
     }
 
     /// When consumers call 'POST' on '/posts' with valid JSON
@@ -84,3 +97,11 @@ extension Request {
 ///
 /// This will allow it to be passed by type.
 extension IOUController: EmptyInitializable { }
+
+extension StructuredDataWrapper {
+    
+    mutating func set(dotKey: String, _ value: NodeRepresentable) throws {
+        self[DotKey(dotKey)] = Self(try value.makeNode(in: context))
+    }
+}
+

@@ -7,21 +7,21 @@ final class IOU: Model {
     
     var emailSource: String
     var emailDestination: String
-    var amount: Int
+    var amountCents: Int
     var createdAt: Date
     var payedAt: Date?
 
-    init(emailSource: String, emailDestination: String, amount: Int) {
+    init(emailSource: String, emailDestination: String, amountCents: Int) {
         self.emailSource = emailSource
         self.emailDestination = emailDestination
-        self.amount = amount
+        self.amountCents = amountCents
         self.createdAt = Date()
     }
 
     init(row: Row) throws {
         emailSource = try row.get("emailSource")
         emailDestination = try row.get("emailDestination")
-        amount = try row.get("amount")
+        amountCents = try row.get("amountCents")
         createdAt = try row.get("createdAt")
         payedAt = try row.get("payedAt")
     }
@@ -30,7 +30,7 @@ final class IOU: Model {
         var row = Row()
         try row.set("emailSource", emailSource)
         try row.set("emailDestination", emailDestination)
-        try row.set("amount", amount)
+        try row.set("amountCents", amountCents)
         try row.set("createdAt", createdAt)
         try row.set("payedAt", payedAt)
         return row
@@ -44,9 +44,9 @@ extension IOU: Preparation {
             builder.id()
             builder.string("emailSource")
             builder.string("emailDestination")
-            builder.int("amount")
+            builder.int("amountCents")
             builder.date("createdAt")
-            builder.date("payedAt")
+            builder.date("payedAt", optional: true)
         }
     }
 
@@ -60,7 +60,7 @@ extension IOU: JSONConvertible {
         try self.init(
             emailSource: json.get("emailSource"),
             emailDestination: json.get("emailDestination"),
-            amount: json.get("amount")
+            amountCents: json.get("amountCents")
         )
     }
     
@@ -69,7 +69,7 @@ extension IOU: JSONConvertible {
         try json.set("id", id)
         try json.set("emailSource", emailSource)
         try json.set("emailDestination", emailDestination)
-        try json.set("amount", amount)
+        try json.set("amountCents", amountCents)
         try json.set("createdAt", createdAt)
         try json.set("payedAt", payedAt)
         return json
