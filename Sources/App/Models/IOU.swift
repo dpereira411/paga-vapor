@@ -5,23 +5,23 @@ import HTTP
 final class IOU: Model {
     let storage = Storage()
     
-    var emailSource: String
-    var emailDestination: String
+    var emailPayor: String
+    var emailPayee: String
     var amountCents: Int
     var iouDescription: String
     var payedAt: Date?
     
-    init(emailSource: String, emailDestination: String, amountCents: Int, iouDescription: String) {
-        self.emailSource = emailSource
-        self.emailDestination = emailDestination
+    init(emailPayor: String, emailPayee: String, amountCents: Int, iouDescription: String) {
+        self.emailPayor = emailPayor
+        self.emailPayee = emailPayee
         self.amountCents = amountCents
         self.iouDescription = iouDescription
         self.createdAt = Date()
     }
     
     init(row: Row) throws {
-        emailSource = try row.get("emailSource")
-        emailDestination = try row.get("emailDestination")
+        emailPayor = try row.get("emailPayor")
+        emailPayee = try row.get("emailPayee")
         amountCents = try row.get("amountCents")
         iouDescription = try row.get("iouDescription")
         payedAt = try row.get("payedAt")
@@ -29,8 +29,8 @@ final class IOU: Model {
     
     func makeRow() throws -> Row {
         var row = Row()
-        try row.set("emailSource", emailSource)
-        try row.set("emailDestination", emailDestination)
+        try row.set("emailPayor", emailPayor)
+        try row.set("emailPayee", emailPayee)
         try row.set("amountCents", amountCents)
         try row.set("iouDescription", iouDescription)
         try row.set("payedAt", payedAt)
@@ -43,8 +43,8 @@ extension IOU: Preparation {
     static func prepare(_ database: Database) throws {
         try database.create(self) { builder in
             builder.id()
-            builder.string("emailSource")
-            builder.string("emailDestination")
+            builder.string("emailPayor")
+            builder.string("emailPayee")
             builder.int("amountCents")
             builder.string("iouDescription")
             builder.date("payedAt", optional: true)
@@ -59,8 +59,8 @@ extension IOU: Preparation {
 extension IOU: JSONConvertible {
     convenience init(json: JSON) throws {
         try self.init(
-            emailSource: json.get("emailSource"),
-            emailDestination: json.get("emailDestination"),
+            emailPayor: json.get("emailPayor"),
+            emailPayee: json.get("emailPayee"),
             amountCents: json.get("amountCents"),
             iouDescription: json.get("iouDescription")
         )
@@ -69,8 +69,8 @@ extension IOU: JSONConvertible {
     func makeJSON() throws -> JSON {
         var json = JSON()
         try json.set("id", id)
-        try json.set("emailSource", emailSource)
-        try json.set("emailDestination", emailDestination)
+        try json.set("emailPayor", emailPayor)
+        try json.set("emailPayee", emailPayee)
         try json.set("amountCents", amountCents)
         try json.set("iouDescription", iouDescription)
         try json.set("payedAt", payedAt)
@@ -87,7 +87,7 @@ extension Array where Element:IOU {
     func reduceTotal() -> [String: Int] {
         return self.reduce([String: Int]()) { r, iou in
             var t = r
-            t[iou.emailDestination] = (t[iou.emailDestination] ?? 0) + iou.amountCents
+            t[iou.emailPayee] = (t[iou.emailPayee] ?? 0) + iou.amountCents
             return t
         }
     }
