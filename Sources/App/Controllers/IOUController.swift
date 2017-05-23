@@ -11,13 +11,13 @@ final class IOUController: ResourceRepresentable {
         
         let array: [JSON] = try totals.map { key, value in
             var response = JSON()
-            
+
             try response.set("email", key)
-            try response.set("amountCents", value)
-            
+            try response.set("totalAmountCents", value)
+
             return response
         }
-        
+
         return try array.makeJSON()
     }
 
