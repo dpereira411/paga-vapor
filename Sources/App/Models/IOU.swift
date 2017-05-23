@@ -36,23 +36,6 @@ final class IOU: Model {
         try row.set("payedAt", payedAt)
         return row
     }
-    
-    struct AddDescritpion: Preparation {
-        static func prepare(_ database: Database) throws {
-            
-            try database.deleteIndex(["createdAt"], for: IOU.self)
-            
-            try database.modify(IOU.self) { builder in
-                builder.date(IOU.createdAtKey)
-                builder.date(IOU.updatedAtKey)
-                builder.string("iouDescription")
-            }
-        }
-        
-        static func revert(_ database: Database) throws {
-            try database.delete(IOU.self)
-        }
-    }
 }
 
 extension IOU: Preparation {
@@ -63,6 +46,7 @@ extension IOU: Preparation {
             builder.string("emailSource")
             builder.string("emailDestination")
             builder.int("amountCents")
+            builder.string("iouDescription")
             builder.date("payedAt", optional: true)
         }
     }
@@ -88,7 +72,7 @@ extension IOU: JSONConvertible {
         try json.set("emailSource", emailSource)
         try json.set("emailDestination", emailDestination)
         try json.set("amountCents", amountCents)
-        try json.set("iouDescription", createdAt)
+        try json.set("iouDescription", iouDescription)
         try json.set("payedAt", payedAt)
         return json
     }
