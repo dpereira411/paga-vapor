@@ -6,6 +6,7 @@ final class MeController {
     func index(request: Request) throws -> ResponseRepresentable {
         let ious = try IOU.all()
         
+        // "authenticated" user email comes in the header
         let mail = request.headers["mail"]
 
         var response = JSON()

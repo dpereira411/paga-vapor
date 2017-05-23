@@ -8,13 +8,14 @@ final class IOU: Model {
     var emailSource: String
     var emailDestination: String
     var amountCents: Int
-    var createdAt: Date
+    var iouDescription: String
     var payedAt: Date?
     
-    init(emailSource: String, emailDestination: String, amountCents: Int) {
+    init(emailSource: String, emailDestination: String, amountCents: Int, iouDescription: String) {
         self.emailSource = emailSource
         self.emailDestination = emailDestination
         self.amountCents = amountCents
+        self.iouDescription = iouDescription
         self.createdAt = Date()
     }
     
@@ -22,7 +23,7 @@ final class IOU: Model {
         emailSource = try row.get("emailSource")
         emailDestination = try row.get("emailDestination")
         amountCents = try row.get("amountCents")
-        createdAt = try row.get("createdAt")
+        iouDescription = try row.get("iouDescription")
         payedAt = try row.get("payedAt")
     }
     
@@ -31,9 +32,26 @@ final class IOU: Model {
         try row.set("emailSource", emailSource)
         try row.set("emailDestination", emailDestination)
         try row.set("amountCents", amountCents)
-        try row.set("createdAt", createdAt)
+        try row.set("iouDescription", iouDescription)
         try row.set("payedAt", payedAt)
         return row
+    }
+    
+    struct AddDescritpion: Preparation {
+        static func prepare(_ database: Database) throws {
+            
+            try database.deleteIndex(["createdAt"], for: IOU.self)
+            
+            try database.modify(IOU.self) { builder in
+                builder.date(IOU.createdAtKey)
+                builder.date(IOU.updatedAtKey)
+                builder.string("iouDescription")
+            }
+        }
+        
+        static func revert(_ database: Database) throws {
+            try database.delete(IOU.self)
+        }
     }
 }
 
@@ -45,7 +63,6 @@ extension IOU: Preparation {
             builder.string("emailSource")
             builder.string("emailDestination")
             builder.int("amountCents")
-            builder.date("createdAt")
             builder.date("payedAt", optional: true)
         }
     }
@@ -60,7 +77,8 @@ extension IOU: JSONConvertible {
         try self.init(
             emailSource: json.get("emailSource"),
             emailDestination: json.get("emailDestination"),
-            amountCents: json.get("amountCents")
+            amountCents: json.get("amountCents"),
+            iouDescription: json.get("iouDescription")
         )
     }
     
@@ -70,15 +88,15 @@ extension IOU: JSONConvertible {
         try json.set("emailSource", emailSource)
         try json.set("emailDestination", emailDestination)
         try json.set("amountCents", amountCents)
-        try json.set("createdAt", createdAt)
+        try json.set("iouDescription", createdAt)
         try json.set("payedAt", payedAt)
         return json
     }
 }
 
-extension IOU: ResponseRepresentable { }
+extension IOU: Timestampable, ResponseRepresentable { }
 
-
+//extension IOU: ResponseRepresentable { }
 
 extension Array where Element:IOU {
     
@@ -98,7 +116,7 @@ extension Dictionary  {
             var response = JSON()
             
             try response.set("email", iou.key)
-            try response.set("amountCents", iou.value)
+            try response.set("totalAmountCents", iou.value)
             
             return response
         }
